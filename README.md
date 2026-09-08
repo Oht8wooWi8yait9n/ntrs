@@ -4,31 +4,26 @@ Automated XML sitemaps and plain-text URL indexes for the **NASA Technical Repor
 
 ---
 
-## Overview
+## Important Note on Onyx Web Connector Compatibility
 
-NTRS hosts NASA's technical publications, meeting papers, contractor reports, research papers, and NACA historical archives.
+Onyx's Sitemap Connector parses `<loc>` tags from the target XML file and directly queues those URLs for indexing. **It does not recursively follow `<sitemapindex>` hierarchies.** If given a sitemap index (such as `ntrs_sitemap.xml`), Onyx will index the 13 sub-sitemap `.xml` URLs rather than the documents inside them.
 
-The catalog contains two primary resource types:
-
-1. **Full-Text PDFs (297,463 documents)**: Direct links to the actual technical PDF files hosted on NASA servers (`https://ntrs.nasa.gov/api/citations/{id}/downloads/{filename}.pdf`). Onyx downloads the full PDF, parses the entire technical text, and embeds all chunks into your vector database.
-2. **Metadata & Abstract Citations (305,104 records)**: Links to the server-side rendered citation pages (`https://ntrs.nasa.gov/citations/{id}`) containing paper titles, author affiliations, publication details, and full abstracts for commercial journal reprints (paywalled articles in *Nature*, *Science*, *AIAA*, *IEEE*) and conference proceedings where no public PDF was submitted.
+To accommodate Onyx directly, this repository provides **flat `<urlset>` sitemaps** containing the actual direct NASA PDF and citation URLs.
 
 ---
 
-## Sitemap Architecture & URLs for Onyx
-
-Because standard XML sitemaps have a protocol limit of **50,000 URLs per file**, the collection is partitioned into chunked sub-sitemaps referenced by standard `<sitemapindex>` roots.
+## Recommended Sitemap URLs for Onyx
 
 ### 1. Full-Text PDFs Only (Recommended for Deep Technical Search)
-* **All PDFs Sitemap Index (297,463 PDFs)**:
+* **All Full-Text PDFs (Single Flat Sitemap, 297,463 PDFs)**:
   ```text
-  https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/ntrs_pdf_sitemap.xml
+  https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/ntrs_pdf_all.xml
   ```
-* **Modern Era PDFs Only (2010–2026, 79,391 PDFs)**:
+* **Modern Era PDFs Only (2010–2026, 79,391 PDFs)** *(Fastest initial technical RAG)*:
   ```text
   https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_modern.xml
   ```
-* **Individual 50,000-URL PDF Chunks**:
+* **Individual 50,000-URL PDF Chunks (For Staged Ingestion)**:
   - Part 1: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_1.xml`
   - Part 2: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_2.xml`
   - Part 3: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_3.xml`
@@ -36,18 +31,16 @@ Because standard XML sitemaps have a protocol limit of **50,000 URLs per file**,
   - Part 5: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_5.xml`
   - Part 6: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_6.xml`
 
-### 2. Metadata & Abstract Citations Only (305,104 Records)
-* **Citations Sitemap Index**:
+### 2. Complete Catalog (PDFs + Citations / Abstracts)
+* **All Records (Single Flat Sitemap, 602,567 URLs)**:
   ```text
-  https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/ntrs_citations_sitemap.xml
+  https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/ntrs_all.xml
   ```
-* **Individual 50,000-Record Citations Chunks**:
-  - `sitemaps/citations/ntrs_citations_1.xml` through `ntrs_citations_7.xml`
 
-### 3. Master Index (Combined PDFs + Citations, 602,567 Records)
-* **Master Sitemap Index**:
+### 3. Metadata & Abstract Citations Only (305,104 Records)
+* **All Citations (Single Flat Sitemap, 305,104 URLs)**:
   ```text
-  https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/ntrs_sitemap.xml
+  https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/ntrs_citations_all.xml
   ```
 
 ---
@@ -55,18 +48,18 @@ Because standard XML sitemaps have a protocol limit of **50,000 URLs per file**,
 ## Ingesting into Onyx
 
 1. In the Onyx UI, navigate to **Admin Panel** → **Connectors** → **Web**.
-2. Click **Add Connector**:
+2. Click **Add Connector** (or **Edit** your existing connector):
    - **Name**: `NASA NTRS Technical Reports`
    - **Base URL / Sitemap URL**:
-     - For modern papers first: Paste the **Modern Era PDFs** URL (`sitemaps/pdf/ntrs_pdf_modern.xml`).
-     - For all technical PDFs: Paste the **All PDFs Sitemap Index** URL (`ntrs_pdf_sitemap.xml`).
-     - For the entire archive: Paste the **Master Sitemap Index** URL (`ntrs_sitemap.xml`).
+     - For modern aerospace research: Use the **Modern Era PDFs** URL (`sitemaps/pdf/ntrs_pdf_modern.xml`).
+     - For all 297k technical PDFs: Use the **All Full-Text PDFs** URL (`ntrs_pdf_all.xml`).
+     - For the entire catalog: Use the **All Records** URL (`ntrs_all.xml`).
    - **Scrape Type**: `Sitemap`
    - **Indexing Schedule**: Weekly or Monthly
-3. Click **Connect**. Onyx will parse the sitemap index, crawl the sub-sitemaps, download the PDFs, and vectorize the content into your document set.
+3. Click **Connect**. Onyx will parse the flat sitemap, extract the PDF URLs, download the PDFs directly, and vectorize the content into your document set.
 
 ---
 
 ## Automation & Maintenance
 
-This repository includes a GitHub Actions workflow (`.github/workflows/update-sitemap.yml`) that runs weekly on Sundays at 04:00 UTC. It queries the NTRS API for newly released technical reports, updates the XML sitemaps, and commits new entries automatically.
+A GitHub Actions workflow (`.github/workflows/update-sitemap.yml`) runs weekly on Sundays at 04:00 UTC. It queries the NTRS API for newly released technical reports, updates the XML sitemaps, and commits new entries automatically.

@@ -205,6 +205,10 @@ def main():
     write_sitemapindex_xml(os.path.join(base_dir, "ntrs_pdf_sitemap.xml"), pdf_sub_urls, today)
     print(f"  Wrote ntrs_pdf_sitemap.xml ({len(pdf_sub_urls)} sub-sitemaps)")
 
+    # Unified Flat PDF Sitemap (All 297k PDFs for Onyx Web Connector)
+    write_urlset_xml(os.path.join(base_dir, "ntrs_pdf_all.xml"), pdf_urls, today)
+    print(f"  Wrote ntrs_pdf_all.xml ({len(pdf_urls):,} URLs)")
+
     # 5. Generate Citations Sitemaps (Chunks of 50k)
     print("\n=== Step 5: Generating Citations Sitemaps ===")
     cit_sub_urls = []
@@ -221,11 +225,19 @@ def main():
     write_sitemapindex_xml(os.path.join(base_dir, "ntrs_citations_sitemap.xml"), cit_sub_urls, today)
     print(f"  Wrote ntrs_citations_sitemap.xml ({len(cit_sub_urls)} sub-sitemaps)")
 
+    # Unified Flat Citations Sitemap (All 305k Citations for Onyx Web Connector)
+    write_urlset_xml(os.path.join(base_dir, "ntrs_citations_all.xml"), citation_urls, today)
+    print(f"  Wrote ntrs_citations_all.xml ({len(citation_urls):,} URLs)")
+
     # 6. Generate Master Sitemap Index (PDFs + Citations)
     print("\n=== Step 6: Generating Master Sitemap Index ===")
     master_subs = pdf_sub_urls + cit_sub_urls
     write_sitemapindex_xml(os.path.join(base_dir, "ntrs_sitemap.xml"), master_subs, today)
     print(f"  Wrote ntrs_sitemap.xml ({len(master_subs)} total sub-sitemaps)")
+
+    # Unified Flat Master Sitemap (All 602k URLs for Onyx Web Connector)
+    write_urlset_xml(os.path.join(base_dir, "ntrs_all.xml"), pdf_urls + citation_urls, today)
+    print(f"  Wrote ntrs_all.xml ({len(pdf_urls) + len(citation_urls):,} URLs)")
 
     # 7. Write Plain Text URL Lists
     print("\n=== Step 7: Writing Plain Text URL Lists ===")
