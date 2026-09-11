@@ -36,12 +36,19 @@ To prevent Onyx from spending time re-indexing modern PDFs when ingesting histor
   https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/ntrs_pdf_complete.xml
   ```
 
-* **Individual 50,000-URL Historical PDF Chunks (For Staged Ingestion)**:
-  - Part 1: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_1.xml`
-  - Part 2: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_2.xml`
-  - Part 3: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_3.xml`
-  - Part 4: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_4.xml`
-  - Part 5: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_5.xml`
+* **Staged 20,000-URL Historical PDF Chunks (~24-Hour Embedding Batches)**:
+  Ingesting 20,000 PDFs takes approximately 24 hours in Onyx. Using these 20k chunks lets you stage ingestion day-by-day, allowing you to reboot, run updates, or index other collections in between:
+  - **Part 1 (20,000 URLs)**: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_1.xml`
+  - **Part 2 (20,000 URLs)**: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_2.xml`
+  - **Part 3 (20,000 URLs)**: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_3.xml`
+  - **Part 4 (20,000 URLs)**: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_4.xml`
+  - **Part 5 (20,000 URLs)**: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_5.xml`
+  - **Part 6 (20,000 URLs)**: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_6.xml`
+  - **Part 7 (20,000 URLs)**: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_7.xml`
+  - **Part 8 (20,000 URLs)**: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_8.xml`
+  - **Part 9 (20,000 URLs)**: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_9.xml`
+  - **Part 10 (20,000 URLs)**: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_10.xml`
+  - **Part 11 (18,072 URLs)**: `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_11.xml`
 
 ---
 

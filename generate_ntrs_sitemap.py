@@ -8,8 +8,8 @@ Indexes:
   4. Metadata/Abstract Citations (~305,000 NTRS landing/abstract pages)
 Outputs:
   - ntrs_sitemap.xml (Root Master Sitemap Index)
-  - ntrs_pdf_sitemap.xml (Historical PDF Sitemap Index: chunks 1..5)
-  - sitemaps/pdf/ntrs_pdf_1.xml ... 5.xml (50k URLs each, Historical 1914-2009)
+  - ntrs_pdf_sitemap.xml (Historical PDF Sitemap Index: chunks 1..11)
+  - sitemaps/pdf/ntrs_pdf_1.xml ... 11.xml (20k URLs each, Historical 1914-2009)
   - sitemaps/pdf/ntrs_pdf_modern.xml (Modern PDFs 2010-2026)
   - ntrs_pdf_all.xml (Flat Historical PDFs for Onyx Web Connector, modern excluded)
   - ntrs_pdf_historical.xml (Flat Historical PDFs, modern excluded)
@@ -33,7 +33,8 @@ import requests
 GITHUB_RAW_BASE = "https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main"
 NTRS_API_SEARCH = "https://ntrs.nasa.gov/api/citations/search"
 NTRS_SITEMAP_INDEX = "https://ntrs.nasa.gov/sitemap.xml"
-CHUNK_SIZE = 50000
+PDF_CHUNK_SIZE = 20000  # 20k URLs per sitemap (~24h embedding window in Onyx)
+CITATIONS_CHUNK_SIZE = 50000
 
 def get_iso_date():
     return datetime.date.today().isoformat()
@@ -215,10 +216,10 @@ def main():
     print(f"Total Metadata/Abstract URLs: {len(citation_urls):,}")
     print(f"Combined Total URLs: {len(all_pdf_urls) + len(citation_urls):,}")
 
-    # 4. Generate PDF Sitemaps (Historical chunks of 50k, modern excluded)
+    # 4. Generate PDF Sitemaps (Historical chunks of 20k, modern excluded)
     print("\n=== Step 4: Generating PDF Sitemaps ===")
     pdf_sub_urls = []
-    pdf_chunks = [historical_pdf_urls[i:i + CHUNK_SIZE] for i in range(0, len(historical_pdf_urls), CHUNK_SIZE)]
+    pdf_chunks = [historical_pdf_urls[i:i + PDF_CHUNK_SIZE] for i in range(0, len(historical_pdf_urls), PDF_CHUNK_SIZE)]
     for idx, chunk in enumerate(pdf_chunks, 1):
         rel_path = f"sitemaps/pdf/ntrs_pdf_{idx}.xml"
         file_path = os.path.join(base_dir, rel_path)
@@ -227,7 +228,7 @@ def main():
         pdf_sub_urls.append(raw_url)
         print(f"  Wrote {rel_path} ({len(chunk):,} URLs)")
 
-    # Clean up obsolete historical chunk files (e.g. ntrs_pdf_6.xml if it existed)
+    # Clean up obsolete historical chunk files (e.g. ntrs_pdf_12.xml if it existed)
     chunk_idx = len(pdf_chunks) + 1
     while True:
         old_chunk = os.path.join(base_dir, f"sitemaps/pdf/ntrs_pdf_{chunk_idx}.xml")
@@ -243,7 +244,7 @@ def main():
     write_urlset_xml(os.path.join(base_dir, modern_rel), modern_pdf_urls, today)
     print(f"  Wrote {modern_rel} ({len(modern_pdf_urls):,} URLs)")
 
-    # PDF Sitemap Index (Historical chunks 1..5)
+    # PDF Sitemap Index (Historical chunks 1..11)
     write_sitemapindex_xml(os.path.join(base_dir, "ntrs_pdf_sitemap.xml"), pdf_sub_urls, today)
     print(f"  Wrote ntrs_pdf_sitemap.xml ({len(pdf_sub_urls)} sub-sitemaps)")
 
@@ -262,7 +263,7 @@ def main():
     # 5. Generate Citations Sitemaps (Chunks of 50k)
     print("\n=== Step 5: Generating Citations Sitemaps ===")
     cit_sub_urls = []
-    cit_chunks = [citation_urls[i:i + CHUNK_SIZE] for i in range(0, len(citation_urls), CHUNK_SIZE)]
+    cit_chunks = [citation_urls[i:i + CITATIONS_CHUNK_SIZE] for i in range(0, len(citation_urls), CITATIONS_CHUNK_SIZE)]
     for idx, chunk in enumerate(cit_chunks, 1):
         rel_path = f"sitemaps/citations/ntrs_citations_{idx}.xml"
         file_path = os.path.join(base_dir, rel_path)
