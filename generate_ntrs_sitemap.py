@@ -2,23 +2,30 @@
 """
 Generate comprehensive XML sitemaps for the NASA Technical Reports Server (NTRS).
 Indexes:
-  1. Full-Text PDFs (~302,000 direct NASA-hosted PDF URLs)
-  2. Metadata/Abstract Citations (~300,000 NTRS landing/abstract pages)
-  3. Modern Era PDFs (2010-2026) for focused indexing
+  1. Historical Full-Text PDFs (1914-2009, ~218,000 URLs, modern era excluded to prevent duplicate Onyx ingestion)
+  2. Modern Era PDFs (2010-2026, ~79,000 direct NASA-hosted PDF URLs)
+  3. Complete Master Full-Text PDFs (~297,000 direct NASA-hosted PDF URLs)
+  4. Metadata/Abstract Citations (~305,000 NTRS landing/abstract pages)
 Outputs:
   - ntrs_sitemap.xml (Root Master Sitemap Index)
-  - ntrs_pdf_sitemap.xml (PDF Sitemap Index)
-  - sitemaps/pdf/ntrs_pdf_1.xml ... 7.xml (50k URLs each)
+  - ntrs_pdf_sitemap.xml (Historical PDF Sitemap Index: chunks 1..5)
+  - sitemaps/pdf/ntrs_pdf_1.xml ... 5.xml (50k URLs each, Historical 1914-2009)
   - sitemaps/pdf/ntrs_pdf_modern.xml (Modern PDFs 2010-2026)
+  - ntrs_pdf_all.xml (Flat Historical PDFs for Onyx Web Connector, modern excluded)
+  - ntrs_pdf_historical.xml (Flat Historical PDFs, modern excluded)
+  - ntrs_pdf_complete.xml (Flat Complete Full-Text PDFs 1914-2026)
   - ntrs_citations_sitemap.xml (Citations Sitemap Index)
-  - sitemaps/citations/ntrs_citations_1.xml ... 6.xml (50k URLs each)
-  - ntrs_pdf_urls.txt, ntrs_citations_urls.txt, ntrs_all_urls.txt
+  - sitemaps/citations/ntrs_citations_1.xml ... 7.xml (50k URLs each)
+  - ntrs_citations_all.xml (Flat All Citations)
+  - ntrs_all.xml (Unified Flat All Records: All PDFs + Citations)
+  - Plain-text URL lists (.txt)
 """
 
 import os
 import re
 import gzip
 import time
+import json
 import datetime
 from concurrent.futures import ThreadPoolExecutor
 import requests
@@ -57,8 +64,18 @@ def step1_fetch_all_citation_ids():
     print(f"Step 1 Complete: Extracted {len(all_ids):,} total unique citation IDs in {dt:.2f}s.\n")
     return all_ids
 
-def step2_harvest_full_text_pdfs():
+def step2_harvest_full_text_pdfs(cache_file=None, force_refresh=False):
     """Query NTRS search API across publication and creation years to extract direct PDF links."""
+    if cache_file and os.path.exists(cache_file) and not force_refresh:
+        try:
+            print(f"Loading cached PDF links from {cache_file}...")
+            with open(cache_file, "r", encoding="utf-8") as f:
+                pdf_dict = json.load(f)
+            print(f"Loaded {len(pdf_dict):,} cached PDF records.\n")
+            return pdf_dict
+        except Exception as e:
+            print(f"Cache load failed ({e}), harvesting fresh from API...")
+
     print("=== Step 2: Harvesting direct full-text PDF links from NTRS API ===")
     t0 = time.time()
 
@@ -117,10 +134,19 @@ def step2_harvest_full_text_pdfs():
         for batch in ex.map(query_partition, tasks):
             for cid, pdf_url, year in batch:
                 if cid not in pdf_dict:
-                    pdf_dict[cid] = (pdf_url, year)
+                    pdf_dict[cid] = [pdf_url, year]
 
     dt = time.time() - t0
     print(f"Step 2 Complete: Harvested {len(pdf_dict):,} citations with direct PDF links in {dt:.2f}s.\n")
+
+    if cache_file:
+        try:
+            with open(cache_file, "w", encoding="utf-8") as f:
+                json.dump(pdf_dict, f)
+            print(f"Saved {len(pdf_dict):,} PDF links to cache {cache_file}\n")
+        except Exception as e:
+            print(f"Could not write cache file: {e}\n")
+
     return pdf_dict
 
 def write_urlset_xml(filepath, urls, lastmod):
@@ -154,17 +180,19 @@ def main():
     start_time = time.time()
     today = get_iso_date()
     base_dir = os.path.dirname(os.path.abspath(__file__))
+    cache_file = os.path.join(base_dir, "ntrs_cache.json")
 
     # 1. Fetch all citation IDs
     all_citation_ids = step1_fetch_all_citation_ids()
 
-    # 2. Harvest all PDF URLs
-    pdf_dict = step2_harvest_full_text_pdfs()
+    # 2. Harvest all PDF URLs (uses local cache if available for instant local runs)
+    pdf_dict = step2_harvest_full_text_pdfs(cache_file=cache_file)
 
     # 3. Categorize URLs
     print("=== Step 3: Categorizing and partitioning URLs ===")
-    pdf_urls = []
+    all_pdf_urls = []
     modern_pdf_urls = []
+    historical_pdf_urls = []
     citation_urls = []
 
     # Sort citations deterministically (newest first)
@@ -173,21 +201,24 @@ def main():
     for cid in sorted_all_ids:
         if cid in pdf_dict:
             pdf_url, year = pdf_dict[cid]
-            pdf_urls.append(pdf_url)
+            all_pdf_urls.append(pdf_url)
             if year >= 2010:
                 modern_pdf_urls.append(pdf_url)
+            else:
+                historical_pdf_urls.append(pdf_url)
         else:
             citation_urls.append(f"https://ntrs.nasa.gov/citations/{cid}")
 
-    print(f"Total Full-Text PDF URLs: {len(pdf_urls):,}")
+    print(f"Total Full-Text PDF URLs: {len(all_pdf_urls):,}")
     print(f"  Modern Era (2010-2026) PDFs: {len(modern_pdf_urls):,}")
+    print(f"  Historical (1914-2009) PDFs: {len(historical_pdf_urls):,}")
     print(f"Total Metadata/Abstract URLs: {len(citation_urls):,}")
-    print(f"Combined Total URLs: {len(pdf_urls) + len(citation_urls):,}")
+    print(f"Combined Total URLs: {len(all_pdf_urls) + len(citation_urls):,}")
 
-    # 4. Generate PDF Sitemaps (Chunks of 50k)
+    # 4. Generate PDF Sitemaps (Historical chunks of 50k, modern excluded)
     print("\n=== Step 4: Generating PDF Sitemaps ===")
     pdf_sub_urls = []
-    pdf_chunks = [pdf_urls[i:i + CHUNK_SIZE] for i in range(0, len(pdf_urls), CHUNK_SIZE)]
+    pdf_chunks = [historical_pdf_urls[i:i + CHUNK_SIZE] for i in range(0, len(historical_pdf_urls), CHUNK_SIZE)]
     for idx, chunk in enumerate(pdf_chunks, 1):
         rel_path = f"sitemaps/pdf/ntrs_pdf_{idx}.xml"
         file_path = os.path.join(base_dir, rel_path)
@@ -196,18 +227,37 @@ def main():
         pdf_sub_urls.append(raw_url)
         print(f"  Wrote {rel_path} ({len(chunk):,} URLs)")
 
-    # PDF Modern Sitemap
+    # Clean up obsolete historical chunk files (e.g. ntrs_pdf_6.xml if it existed)
+    chunk_idx = len(pdf_chunks) + 1
+    while True:
+        old_chunk = os.path.join(base_dir, f"sitemaps/pdf/ntrs_pdf_{chunk_idx}.xml")
+        if os.path.exists(old_chunk):
+            os.remove(old_chunk)
+            print(f"  Removed obsolete {old_chunk}")
+            chunk_idx += 1
+        else:
+            break
+
+    # PDF Modern Sitemap (2010-2026)
     modern_rel = "sitemaps/pdf/ntrs_pdf_modern.xml"
     write_urlset_xml(os.path.join(base_dir, modern_rel), modern_pdf_urls, today)
     print(f"  Wrote {modern_rel} ({len(modern_pdf_urls):,} URLs)")
 
-    # PDF Sitemap Index
+    # PDF Sitemap Index (Historical chunks 1..5)
     write_sitemapindex_xml(os.path.join(base_dir, "ntrs_pdf_sitemap.xml"), pdf_sub_urls, today)
     print(f"  Wrote ntrs_pdf_sitemap.xml ({len(pdf_sub_urls)} sub-sitemaps)")
 
-    # Unified Flat PDF Sitemap (All 297k PDFs for Onyx Web Connector)
-    write_urlset_xml(os.path.join(base_dir, "ntrs_pdf_all.xml"), pdf_urls, today)
-    print(f"  Wrote ntrs_pdf_all.xml ({len(pdf_urls):,} URLs)")
+    # Unified Flat PDF Sitemap (Historical PDFs for Onyx Web Connector, modern 2010-2026 excluded)
+    write_urlset_xml(os.path.join(base_dir, "ntrs_pdf_all.xml"), historical_pdf_urls, today)
+    print(f"  Wrote ntrs_pdf_all.xml ({len(historical_pdf_urls):,} URLs - Modern 2010-2026 excluded)")
+
+    # Explicit alias for historical
+    write_urlset_xml(os.path.join(base_dir, "ntrs_pdf_historical.xml"), historical_pdf_urls, today)
+    print(f"  Wrote ntrs_pdf_historical.xml ({len(historical_pdf_urls):,} URLs)")
+
+    # Complete master of all PDFs (un-partitioned, if needed)
+    write_urlset_xml(os.path.join(base_dir, "ntrs_pdf_complete.xml"), all_pdf_urls, today)
+    print(f"  Wrote ntrs_pdf_complete.xml ({len(all_pdf_urls):,} URLs)")
 
     # 5. Generate Citations Sitemaps (Chunks of 50k)
     print("\n=== Step 5: Generating Citations Sitemaps ===")
@@ -229,25 +279,31 @@ def main():
     write_urlset_xml(os.path.join(base_dir, "ntrs_citations_all.xml"), citation_urls, today)
     print(f"  Wrote ntrs_citations_all.xml ({len(citation_urls):,} URLs)")
 
-    # 6. Generate Master Sitemap Index (PDFs + Citations)
+    # 6. Generate Master Sitemap Index (Modern + Historical PDFs + Citations)
     print("\n=== Step 6: Generating Master Sitemap Index ===")
-    master_subs = pdf_sub_urls + cit_sub_urls
+    master_subs = [f"{GITHUB_RAW_BASE}/sitemaps/pdf/ntrs_pdf_modern.xml"] + pdf_sub_urls + cit_sub_urls
     write_sitemapindex_xml(os.path.join(base_dir, "ntrs_sitemap.xml"), master_subs, today)
     print(f"  Wrote ntrs_sitemap.xml ({len(master_subs)} total sub-sitemaps)")
 
     # Unified Flat Master Sitemap (All 602k URLs for Onyx Web Connector)
-    write_urlset_xml(os.path.join(base_dir, "ntrs_all.xml"), pdf_urls + citation_urls, today)
-    print(f"  Wrote ntrs_all.xml ({len(pdf_urls) + len(citation_urls):,} URLs)")
+    write_urlset_xml(os.path.join(base_dir, "ntrs_all.xml"), all_pdf_urls + citation_urls, today)
+    print(f"  Wrote ntrs_all.xml ({len(all_pdf_urls) + len(citation_urls):,} URLs)")
 
     # 7. Write Plain Text URL Lists
     print("\n=== Step 7: Writing Plain Text URL Lists ===")
     with open(os.path.join(base_dir, "ntrs_pdf_urls.txt"), "w", encoding="utf-8") as f:
-        f.write("\n".join(pdf_urls) + "\n")
+        f.write("\n".join(historical_pdf_urls) + "\n")
+    with open(os.path.join(base_dir, "ntrs_pdf_historical_urls.txt"), "w", encoding="utf-8") as f:
+        f.write("\n".join(historical_pdf_urls) + "\n")
+    with open(os.path.join(base_dir, "ntrs_pdf_modern_urls.txt"), "w", encoding="utf-8") as f:
+        f.write("\n".join(modern_pdf_urls) + "\n")
+    with open(os.path.join(base_dir, "ntrs_pdf_complete_urls.txt"), "w", encoding="utf-8") as f:
+        f.write("\n".join(all_pdf_urls) + "\n")
     with open(os.path.join(base_dir, "ntrs_citations_urls.txt"), "w", encoding="utf-8") as f:
         f.write("\n".join(citation_urls) + "\n")
     with open(os.path.join(base_dir, "ntrs_all_urls.txt"), "w", encoding="utf-8") as f:
-        f.write("\n".join(pdf_urls + citation_urls) + "\n")
-    print("  Wrote ntrs_pdf_urls.txt, ntrs_citations_urls.txt, ntrs_all_urls.txt")
+        f.write("\n".join(all_pdf_urls + citation_urls) + "\n")
+    print("  Wrote plain text URL lists.")
 
     total_time = time.time() - start_time
     print(f"\nAll operations completed successfully in {total_time:.2f}s ({total_time / 60:.2f} mins).")
