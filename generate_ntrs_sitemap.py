@@ -39,27 +39,64 @@ CITATIONS_CHUNK_SIZE = 50000
 def get_iso_date():
     return datetime.date.today().isoformat()
 
-def step1_fetch_all_citation_ids():
-    """Download official NTRS sitemaps and extract all citation IDs."""
+def step1_fetch_all_citation_ids(base_dir=None):
+    """Download official NTRS sitemaps and extract all citation IDs with retry and cache fallback."""
     print("=== Step 1: Downloading 116 official NTRS sitemaps ===")
     t0 = time.time()
-    resp = requests.get(NTRS_SITEMAP_INDEX, timeout=15)
-    sitemap_urls = re.findall(r'<loc>(https://ntrs\.nasa\.gov/sitemap-[^<]+)</loc>', resp.text)
+    sitemap_urls = []
+    try:
+        resp = requests.get(NTRS_SITEMAP_INDEX, timeout=20)
+        if resp.status_code == 200:
+            sitemap_urls = re.findall(r'<loc>(https://ntrs\.nasa\.gov/sitemap-[^<]+)</loc>', resp.text)
+    except Exception as e:
+        print(f"  Warning: Could not fetch NTRS sitemap index: {e}")
+
     print(f"Found {len(sitemap_urls)} sub-sitemaps in official index.")
 
     def parse_sub(url):
-        try:
-            r = requests.get(url, timeout=20)
-            text = gzip.decompress(r.content).decode("utf-8")
-            return re.findall(r'<loc>https://ntrs\.nasa\.gov/citations/(\d+)</loc>', text)
-        except Exception as e:
-            print(f"  Error fetching {url}: {e}")
-            return []
+        for attempt in range(5):
+            try:
+                r = requests.get(url, timeout=25)
+                if r.status_code == 200:
+                    text = gzip.decompress(r.content).decode("utf-8")
+                    return re.findall(r'<loc>https://ntrs\.nasa\.gov/citations/(\d+)</loc>', text)
+                elif r.status_code == 429:
+                    time.sleep(2 * (attempt + 1))
+            except Exception:
+                time.sleep(1 + attempt)
+        print(f"  [!] Failed to fetch {url} after 5 attempts.")
+        return []
 
     all_ids = set()
-    with ThreadPoolExecutor(max_workers=20) as ex:
-        for ids in ex.map(parse_sub, sitemap_urls):
-            all_ids.update(ids)
+    if sitemap_urls:
+        with ThreadPoolExecutor(max_workers=6) as ex:
+            for ids in ex.map(parse_sub, sitemap_urls):
+                all_ids.update(ids)
+
+    # Cache fallback / safety check: If network issues dropped sitemaps, supplement from existing local files
+    if base_dir and len(all_ids) < 550000:
+        print(f"  [!] Warning: Harvested {len(all_ids):,} IDs (< 550k expected). Loading fallback IDs from local files...")
+        cache_gz = os.path.join(base_dir, "ntrs_cache.json.gz")
+        if os.path.exists(cache_gz):
+            try:
+                with gzip.open(cache_gz, "rt", encoding="utf-8") as f:
+                    cdata = json.load(f)
+                    all_ids.update(cdata.keys())
+            except Exception:
+                pass
+        cit_txt = os.path.join(base_dir, "ntrs_citations_urls.txt")
+        if os.path.exists(cit_txt):
+            try:
+                with open(cit_txt, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line:
+                            cid = line.rstrip("/").split("/")[-1]
+                            if cid.isdigit():
+                                all_ids.add(cid)
+            except Exception:
+                pass
+        print(f"  Restored total IDs to {len(all_ids):,} using local fallback cache.")
 
     dt = time.time() - t0
     print(f"Step 1 Complete: Extracted {len(all_ids):,} total unique citation IDs in {dt:.2f}s.\n")
@@ -281,8 +318,8 @@ def main():
     cache_file_gz = os.path.join(base_dir, "ntrs_cache.json.gz")
     cache_file_json = os.path.join(base_dir, "ntrs_cache.json")
 
-    # 1. Fetch all citation IDs
-    all_citation_ids = step1_fetch_all_citation_ids()
+    # 1. Fetch all citation IDs (with retry and local cache fallback)
+    all_citation_ids = step1_fetch_all_citation_ids(base_dir=base_dir)
 
     # 2. Harvest all PDF URLs (uses local gzip cache if available, incrementally updates recent years)
     pdf_dict = step2_harvest_full_text_pdfs(cache_file_gz=cache_file_gz, cache_file_json=cache_file_json)
@@ -313,6 +350,13 @@ def main():
     print(f"  Historical (1914-2009) PDFs: {len(historical_pdf_urls):,}")
     print(f"Total Metadata/Abstract URLs: {len(citation_urls):,}")
     print(f"Combined Total URLs: {len(all_pdf_urls) + len(citation_urls):,}")
+
+    # Safety Check: Prevent publishing corrupted or truncated sitemaps
+    if len(all_pdf_urls) < 250000 or len(citation_urls) < 250000:
+        raise RuntimeError(
+            f"Safety check aborted: Found only {len(all_pdf_urls):,} PDFs and {len(citation_urls):,} citations "
+            f"(expected ~297k PDFs and ~305k citations). Aborting to prevent sitemap corruption!"
+        )
 
     # 4. Generate PDF Sitemaps (Historical chunks of 20k, modern excluded)
     print("\n=== Step 4: Generating PDF Sitemaps ===")
