@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 .DS_Store
 ntrs_cache.json
+ntrs_all.xml
+ntrs_pdf_complete.xml
+ntrs_pdf_historical.xml

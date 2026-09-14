@@ -31,9 +31,9 @@ To prevent Onyx from spending time re-indexing modern PDFs when ingesting histor
 > [!NOTE]
 > **Zero Duplicate Ingestion**: Tier 1 (79,391) and Tier 2 (218,072) have **0% overlap**. Adding both connectors indexes 100% of all 297,463 NASA technical PDFs without re-indexing a single document.
 
-* **Optional: Complete Master Archive (1914–2026, 297,463 PDFs in a single flat file)**:
+* **Optional: Complete Master Archive (1914–2026, 297,942 PDFs in a compressed sitemap)**:
   ```text
-  https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/ntrs_pdf_complete.xml
+  https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/ntrs_pdf_complete.xml.gz
   ```
 
 * **Staged 20,000-URL Historical PDF Chunks (~24-Hour Embedding Batches)**:
@@ -53,9 +53,9 @@ To prevent Onyx from spending time re-indexing modern PDFs when ingesting histor
 ---
 
 ### 2. Complete Catalog (PDFs + Citations / Abstracts)
-* **All Records (Single Flat Sitemap, 602,567 URLs)**:
+* **All Records (Compressed Sitemap, 602,567 URLs)**:
   ```text
-  https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/ntrs_all.xml
+  https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/ntrs_all.xml.gz
   ```
 
 ---

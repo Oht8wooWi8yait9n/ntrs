@@ -34,7 +34,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A *.xml sitemaps/ ntrs_*.txt
+          git config http.postBuffer 524288000
+          git add -A *.xml *.xml.gz sitemaps/ ntrs_*.txt ntrs_cache.json.gz
           if git diff --staged --quiet; then
             echo "No changes detected in sitemaps."
           else

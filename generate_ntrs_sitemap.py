@@ -65,24 +65,106 @@ def step1_fetch_all_citation_ids():
     print(f"Step 1 Complete: Extracted {len(all_ids):,} total unique citation IDs in {dt:.2f}s.\n")
     return all_ids
 
-def step2_harvest_full_text_pdfs(cache_file=None, force_refresh=False):
-    """Query NTRS search API across publication and creation years to extract direct PDF links."""
-    if cache_file and os.path.exists(cache_file) and not force_refresh:
+def query_partition(item):
+    name, body, year = item
+    max_retries = 3
+    for attempt in range(max_retries):
         try:
-            print(f"Loading cached PDF links from {cache_file}...")
-            with open(cache_file, "r", encoding="utf-8") as f:
-                pdf_dict = json.load(f)
-            print(f"Loaded {len(pdf_dict):,} cached PDF records.\n")
-            return pdf_dict
+            r = requests.post(NTRS_API_SEARCH, json=body, timeout=45)
+            if r.status_code == 200:
+                results = r.json().get("results", [])
+                extracted = []
+                for doc in results:
+                    cid = str(doc.get("id", ""))
+                    downloads = doc.get("downloads", [])
+                    for d in downloads:
+                        pdf_rel = d.get("links", {}).get("pdf")
+                        if pdf_rel and pdf_rel.endswith(".pdf"):
+                            full_url = f"https://ntrs.nasa.gov{pdf_rel}"
+                            extracted.append((cid, full_url, year))
+                            break
+                return extracted
+            elif r.status_code == 429:
+                time.sleep(2 * (attempt + 1))
         except Exception as e:
-            print(f"Cache load failed ({e}), harvesting fresh from API...")
+            if attempt == max_retries - 1:
+                print(f"  Error querying {name}: {e}")
+            time.sleep(1)
+    return []
 
+def step2_harvest_full_text_pdfs(cache_file_gz=None, cache_file_json=None, force_refresh=False):
+    """Load cached PDF links from gzip (or JSON) and incrementally harvest new PDFs for recent years."""
+    pdf_dict = {}
+    loaded = False
+
+    # 1. Try loading from compressed gzip cache
+    if cache_file_gz and os.path.exists(cache_file_gz) and not force_refresh:
+        try:
+            print(f"Loading cached PDF links from {cache_file_gz}...")
+            with gzip.open(cache_file_gz, "rt", encoding="utf-8") as f:
+                pdf_dict = json.load(f)
+            print(f"Loaded {len(pdf_dict):,} cached PDF records from gzip cache.\n")
+            loaded = True
+        except Exception as e:
+            print(f"Gzip cache load failed ({e}), checking uncompressed cache...")
+
+    # 2. Try loading from uncompressed JSON cache if gzip not available
+    if not loaded and cache_file_json and os.path.exists(cache_file_json) and not force_refresh:
+        try:
+            print(f"Loading cached PDF links from {cache_file_json}...")
+            with open(cache_file_json, "r", encoding="utf-8") as f:
+                pdf_dict = json.load(f)
+            print(f"Loaded {len(pdf_dict):,} cached PDF records from JSON cache.\n")
+            loaded = True
+        except Exception as e:
+            print(f"JSON cache load failed ({e}), harvesting fresh from API...")
+
+    this_year = datetime.date.today().year
+
+    # 3. If loaded, do an incremental check for recent years (current year and previous year)
+    if loaded:
+        print(f"=== Incremental Check: Checking NTRS API for new {this_year-1}..{this_year} publications ===")
+        inc_tasks = []
+        for y in range(this_year - 1, this_year + 1):
+            inc_tasks.append((f"pub_{y}", {
+                "page": {"size": 10000},
+                "index": ["submissions*"],
+                "disseminated": ["DOCUMENT_AND_METADATA"],
+                "published": {"gte": f"{y}-01-01T00:00:00", "lte": f"{y}-12-31T23:59:59"}
+            }, y))
+            inc_tasks.append((f"cre_{y}", {
+                "page": {"size": 10000},
+                "index": ["submissions*"],
+                "disseminated": ["DOCUMENT_AND_METADATA"],
+                "created": {"gte": f"{y}-01-01T00:00:00", "lte": f"{y}-12-31T23:59:59"}
+            }, y))
+
+        new_count = 0
+        with ThreadPoolExecutor(max_workers=4) as ex:
+            for batch in ex.map(query_partition, inc_tasks):
+                for cid, pdf_url, year in batch:
+                    if cid not in pdf_dict:
+                        pdf_dict[cid] = [pdf_url, year]
+                        new_count += 1
+
+        print(f"Incremental check complete: Added {new_count:,} new PDF records.")
+        if cache_file_gz:
+            try:
+                with gzip.open(cache_file_gz, "wt", encoding="utf-8") as f:
+                    json.dump(pdf_dict, f)
+                print(f"Saved {len(pdf_dict):,} records to gzip cache {cache_file_gz}\n")
+            except Exception as e:
+                print(f"Warning: Could not save gzip cache: {e}\n")
+
+        return pdf_dict
+
+    # 4. If not loaded, full harvest across 1914 to this_year + 1
     print("=== Step 2: Harvesting direct full-text PDF links from NTRS API ===")
     t0 = time.time()
 
     tasks = []
-    # 1. Published years 1914 to 2027
-    for y in range(1914, 2028):
+    # Published years 1914 to this_year + 1
+    for y in range(1914, this_year + 2):
         body = {
             "page": {"size": 10000},
             "index": ["submissions*"],
@@ -91,8 +173,8 @@ def step2_harvest_full_text_pdfs(cache_file=None, force_refresh=False):
         }
         tasks.append((f"pub_{y}", body, y))
 
-    # 2. Created years 2014 to 2026 (catches recent submissions without published dates)
-    for y in range(2014, 2027):
+    # Created years 2014 to this_year
+    for y in range(2014, this_year + 1):
         body = {
             "page": {"size": 10000},
             "index": ["submissions*"],
@@ -103,34 +185,6 @@ def step2_harvest_full_text_pdfs(cache_file=None, force_refresh=False):
 
     print(f"Dispatching {len(tasks)} partition queries with ThreadPoolExecutor...")
 
-    def query_partition(item):
-        name, body, year = item
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                r = requests.post(NTRS_API_SEARCH, json=body, timeout=45)
-                if r.status_code == 200:
-                    results = r.json().get("results", [])
-                    extracted = []
-                    for doc in results:
-                        cid = str(doc.get("id", ""))
-                        downloads = doc.get("downloads", [])
-                        for d in downloads:
-                            pdf_rel = d.get("links", {}).get("pdf")
-                            if pdf_rel and pdf_rel.endswith(".pdf"):
-                                full_url = f"https://ntrs.nasa.gov{pdf_rel}"
-                                extracted.append((cid, full_url, year))
-                                break
-                    return extracted
-                elif r.status_code == 429:
-                    time.sleep(2 * (attempt + 1))
-            except Exception as e:
-                if attempt == max_retries - 1:
-                    print(f"  Error querying {name}: {e}")
-                time.sleep(1)
-        return []
-
-    pdf_dict = {}  # cid -> (pdf_url, year)
     with ThreadPoolExecutor(max_workers=8) as ex:
         for batch in ex.map(query_partition, tasks):
             for cid, pdf_url, year in batch:
@@ -140,20 +194,39 @@ def step2_harvest_full_text_pdfs(cache_file=None, force_refresh=False):
     dt = time.time() - t0
     print(f"Step 2 Complete: Harvested {len(pdf_dict):,} citations with direct PDF links in {dt:.2f}s.\n")
 
-    if cache_file:
+    if cache_file_gz:
         try:
-            with open(cache_file, "w", encoding="utf-8") as f:
+            with gzip.open(cache_file_gz, "wt", encoding="utf-8") as f:
                 json.dump(pdf_dict, f)
-            print(f"Saved {len(pdf_dict):,} PDF links to cache {cache_file}\n")
+            print(f"Saved {len(pdf_dict):,} PDF links to gzip cache {cache_file_gz}\n")
         except Exception as e:
-            print(f"Could not write cache file: {e}\n")
+            print(f"Could not write gzip cache file: {e}\n")
 
     return pdf_dict
 
-def write_urlset_xml(filepath, urls, lastmod):
-    """Write standard urlset XML conforming to sitemaps.org."""
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    with open(filepath, "w", encoding="utf-8") as f:
+def write_urlset_xml(filepath, urls, lastmod, compress=False):
+    """Write standard urlset XML conforming to sitemaps.org (supports gzip compression).
+    Preserves existing files without rewriting if the URL list has not changed."""
+    actual_path = filepath if (filepath.endswith(".gz") or not compress) else filepath + ".gz"
+
+    # Check if existing file has identical URLs to avoid bumping lastmod and polluting git diffs
+    if os.path.exists(actual_path):
+        try:
+            if actual_path.endswith(".gz"):
+                with gzip.open(actual_path, "rt", encoding="utf-8") as f:
+                    content = f.read()
+            else:
+                with open(actual_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+            existing_locs = re.findall(r'<loc>([^<]+)</loc>', content)
+            if existing_locs == urls:
+                return actual_path
+        except Exception:
+            pass
+
+    os.makedirs(os.path.dirname(actual_path) or ".", exist_ok=True)
+    open_fn = (lambda p: gzip.open(p, "wt", encoding="utf-8")) if (compress or actual_path.endswith(".gz")) else (lambda p: open(p, "w", encoding="utf-8"))
+    with open_fn(actual_path) as f:
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
         for u in urls:
@@ -163,9 +236,20 @@ def write_urlset_xml(filepath, urls, lastmod):
             f.write("    <changefreq>monthly</changefreq>\n")
             f.write("  </url>\n")
         f.write("</urlset>\n")
+    return actual_path
 
 def write_sitemapindex_xml(filepath, sub_sitemap_urls, lastmod):
     """Write standard sitemapindex XML referencing sub-sitemaps."""
+    if os.path.exists(filepath):
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                content = f.read()
+            existing_subs = re.findall(r'<loc>([^<]+)</loc>', content)
+            if existing_subs == sub_sitemap_urls:
+                return
+        except Exception:
+            pass
+
     os.makedirs(os.path.dirname(filepath) or ".", exist_ok=True)
     with open(filepath, "w", encoding="utf-8") as f:
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
@@ -177,17 +261,31 @@ def write_sitemapindex_xml(filepath, sub_sitemap_urls, lastmod):
             f.write("  </sitemap>\n")
         f.write("</sitemapindex>\n")
 
+def write_txt_list(filepath, urls):
+    """Write plain text URL list, preserving existing file if content is identical."""
+    content = "\n".join(urls) + "\n"
+    if os.path.exists(filepath):
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                if f.read() == content:
+                    return
+        except Exception:
+            pass
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(content)
+
 def main():
     start_time = time.time()
     today = get_iso_date()
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    cache_file = os.path.join(base_dir, "ntrs_cache.json")
+    cache_file_gz = os.path.join(base_dir, "ntrs_cache.json.gz")
+    cache_file_json = os.path.join(base_dir, "ntrs_cache.json")
 
     # 1. Fetch all citation IDs
     all_citation_ids = step1_fetch_all_citation_ids()
 
-    # 2. Harvest all PDF URLs (uses local cache if available for instant local runs)
-    pdf_dict = step2_harvest_full_text_pdfs(cache_file=cache_file)
+    # 2. Harvest all PDF URLs (uses local gzip cache if available, incrementally updates recent years)
+    pdf_dict = step2_harvest_full_text_pdfs(cache_file_gz=cache_file_gz, cache_file_json=cache_file_json)
 
     # 3. Categorize URLs
     print("=== Step 3: Categorizing and partitioning URLs ===")
@@ -248,17 +346,20 @@ def main():
     write_sitemapindex_xml(os.path.join(base_dir, "ntrs_pdf_sitemap.xml"), pdf_sub_urls, today)
     print(f"  Wrote ntrs_pdf_sitemap.xml ({len(pdf_sub_urls)} sub-sitemaps)")
 
-    # Unified Flat PDF Sitemap (Historical PDFs for Onyx Web Connector, modern 2010-2026 excluded)
+    # Unified Flat PDF Sitemap (Historical PDFs for Onyx Web Connector, modern 2010-2026 excluded, 37MB)
     write_urlset_xml(os.path.join(base_dir, "ntrs_pdf_all.xml"), historical_pdf_urls, today)
     print(f"  Wrote ntrs_pdf_all.xml ({len(historical_pdf_urls):,} URLs - Modern 2010-2026 excluded)")
 
-    # Explicit alias for historical
-    write_urlset_xml(os.path.join(base_dir, "ntrs_pdf_historical.xml"), historical_pdf_urls, today)
-    print(f"  Wrote ntrs_pdf_historical.xml ({len(historical_pdf_urls):,} URLs)")
+    # Complete master of all PDFs (compressed .xml.gz to keep under GitHub 50MB limit)
+    write_urlset_xml(os.path.join(base_dir, "ntrs_pdf_complete.xml.gz"), all_pdf_urls, today, compress=True)
+    print(f"  Wrote ntrs_pdf_complete.xml.gz ({len(all_pdf_urls):,} URLs, compressed ~2.4MB)")
 
-    # Complete master of all PDFs (un-partitioned, if needed)
-    write_urlset_xml(os.path.join(base_dir, "ntrs_pdf_complete.xml"), all_pdf_urls, today)
-    print(f"  Wrote ntrs_pdf_complete.xml ({len(all_pdf_urls):,} URLs)")
+    # Remove obsolete uncompressed files exceeding GitHub's 50MB threshold
+    for obsolete in ["ntrs_all.xml", "ntrs_pdf_complete.xml", "ntrs_pdf_historical.xml"]:
+        old_p = os.path.join(base_dir, obsolete)
+        if os.path.exists(old_p):
+            os.remove(old_p)
+            print(f"  Removed obsolete uncompressed file: {obsolete}")
 
     # 5. Generate Citations Sitemaps (Chunks of 50k)
     print("\n=== Step 5: Generating Citations Sitemaps ===")
@@ -276,7 +377,7 @@ def main():
     write_sitemapindex_xml(os.path.join(base_dir, "ntrs_citations_sitemap.xml"), cit_sub_urls, today)
     print(f"  Wrote ntrs_citations_sitemap.xml ({len(cit_sub_urls)} sub-sitemaps)")
 
-    # Unified Flat Citations Sitemap (All 305k Citations for Onyx Web Connector)
+    # Unified Flat Citations Sitemap (All 305k Citations for Onyx Web Connector, 43MB)
     write_urlset_xml(os.path.join(base_dir, "ntrs_citations_all.xml"), citation_urls, today)
     print(f"  Wrote ntrs_citations_all.xml ({len(citation_urls):,} URLs)")
 
@@ -286,24 +387,18 @@ def main():
     write_sitemapindex_xml(os.path.join(base_dir, "ntrs_sitemap.xml"), master_subs, today)
     print(f"  Wrote ntrs_sitemap.xml ({len(master_subs)} total sub-sitemaps)")
 
-    # Unified Flat Master Sitemap (All 602k URLs for Onyx Web Connector)
-    write_urlset_xml(os.path.join(base_dir, "ntrs_all.xml"), all_pdf_urls + citation_urls, today)
-    print(f"  Wrote ntrs_all.xml ({len(all_pdf_urls) + len(citation_urls):,} URLs)")
+    # Unified Flat Master Sitemap (compressed .xml.gz to keep under GitHub 50MB limit)
+    write_urlset_xml(os.path.join(base_dir, "ntrs_all.xml.gz"), all_pdf_urls + citation_urls, today, compress=True)
+    print(f"  Wrote ntrs_all.xml.gz ({len(all_pdf_urls) + len(citation_urls):,} URLs, compressed ~3.4MB)")
 
     # 7. Write Plain Text URL Lists
     print("\n=== Step 7: Writing Plain Text URL Lists ===")
-    with open(os.path.join(base_dir, "ntrs_pdf_urls.txt"), "w", encoding="utf-8") as f:
-        f.write("\n".join(historical_pdf_urls) + "\n")
-    with open(os.path.join(base_dir, "ntrs_pdf_historical_urls.txt"), "w", encoding="utf-8") as f:
-        f.write("\n".join(historical_pdf_urls) + "\n")
-    with open(os.path.join(base_dir, "ntrs_pdf_modern_urls.txt"), "w", encoding="utf-8") as f:
-        f.write("\n".join(modern_pdf_urls) + "\n")
-    with open(os.path.join(base_dir, "ntrs_pdf_complete_urls.txt"), "w", encoding="utf-8") as f:
-        f.write("\n".join(all_pdf_urls) + "\n")
-    with open(os.path.join(base_dir, "ntrs_citations_urls.txt"), "w", encoding="utf-8") as f:
-        f.write("\n".join(citation_urls) + "\n")
-    with open(os.path.join(base_dir, "ntrs_all_urls.txt"), "w", encoding="utf-8") as f:
-        f.write("\n".join(all_pdf_urls + citation_urls) + "\n")
+    write_txt_list(os.path.join(base_dir, "ntrs_pdf_urls.txt"), historical_pdf_urls)
+    write_txt_list(os.path.join(base_dir, "ntrs_pdf_historical_urls.txt"), historical_pdf_urls)
+    write_txt_list(os.path.join(base_dir, "ntrs_pdf_modern_urls.txt"), modern_pdf_urls)
+    write_txt_list(os.path.join(base_dir, "ntrs_pdf_complete_urls.txt"), all_pdf_urls)
+    write_txt_list(os.path.join(base_dir, "ntrs_citations_urls.txt"), citation_urls)
+    write_txt_list(os.path.join(base_dir, "ntrs_all_urls.txt"), all_pdf_urls + citation_urls)
     print("  Wrote plain text URL lists.")
 
     total_time = time.time() - start_time
