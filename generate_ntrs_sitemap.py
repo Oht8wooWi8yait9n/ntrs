@@ -324,6 +324,9 @@ def main():
     # 2. Harvest all PDF URLs (uses local gzip cache if available, incrementally updates recent years)
     pdf_dict = step2_harvest_full_text_pdfs(cache_file_gz=cache_file_gz, cache_file_json=cache_file_json)
 
+    # Ensure all harvested PDFs are included in citation IDs (since NASA's static sitemaps lag behind live API)
+    all_citation_ids.update(pdf_dict.keys())
+
     # 3. Categorize URLs
     print("=== Step 3: Categorizing and partitioning URLs ===")
     all_pdf_urls = []
