@@ -40,5 +40,16 @@ jobs:
             echo "No changes detected in sitemaps."
           else
             git commit -m "Automated update of NTRS sitemaps [skip ci]"
-            git push
+            for attempt in $(seq 1 5); do
+              echo "Push attempt $attempt of 5..."
+              if git push; then
+                echo "Successfully pushed updates."
+                exit 0
+              fi
+              echo "Push failed, pulling with rebase and retrying in 5s..."
+              sleep 5
+              git pull --rebase origin main || true
+            done
+            echo "Failed to push after 5 attempts."
+            exit 1
           fi

@@ -3,21 +3,24 @@
 Generate comprehensive XML sitemaps for the NASA Technical Reports Server (NTRS).
 Indexes:
   1. Historical Full-Text PDFs (1914-2009, ~218,000 URLs, modern era excluded to prevent duplicate Onyx ingestion)
-  2. Modern Era PDFs (2010-2026, ~79,000 direct NASA-hosted PDF URLs)
-  3. Complete Master Full-Text PDFs (~297,000 direct NASA-hosted PDF URLs)
-  4. Metadata/Abstract Citations (~305,000 NTRS landing/abstract pages)
+  2. Modern Era Baseline PDFs (2010-Aug 2026, ~83,500 direct NASA-hosted PDF URLs, frozen)
+  3. Active 2026 Updates (Sep 2026-Dec 2026, ~350+ direct NASA-hosted PDF URLs)
+  4. Annual Sitemaps for Future Years (2027+)
+  5. Complete Master Full-Text PDFs (~298,000 direct NASA-hosted PDF URLs)
+  6. Metadata/Abstract Citations (~305,000 NTRS landing/abstract pages)
 Outputs:
   - ntrs_sitemap.xml (Root Master Sitemap Index)
   - ntrs_pdf_sitemap.xml (Historical PDF Sitemap Index: chunks 1..11)
   - sitemaps/pdf/ntrs_pdf_1.xml ... 11.xml (20k URLs each, Historical 1914-2009)
-  - sitemaps/pdf/ntrs_pdf_modern.xml (Modern PDFs 2010-2026)
+  - sitemaps/pdf/ntrs_pdf_modern.xml (Modern PDFs 2010-Aug 2026, frozen)
+  - sitemaps/pdf/ntrs_pdf_2026.xml (2026 Updates Sep-Dec 2026)
+  - sitemaps/pdf/ntrs_pdf_{year}.xml (Annual Sitemaps for 2027+)
   - ntrs_pdf_all.xml (Flat Historical PDFs for Onyx Web Connector, modern excluded)
-  - ntrs_pdf_historical.xml (Flat Historical PDFs, modern excluded)
-  - ntrs_pdf_complete.xml (Flat Complete Full-Text PDFs 1914-2026)
+  - ntrs_pdf_complete.xml.gz (Flat Complete Full-Text PDFs 1914-present)
   - ntrs_citations_sitemap.xml (Citations Sitemap Index)
   - sitemaps/citations/ntrs_citations_1.xml ... 7.xml (50k URLs each)
   - ntrs_citations_all.xml (Flat All Citations)
-  - ntrs_all.xml (Unified Flat All Records: All PDFs + Citations)
+  - ntrs_all.xml.gz (Unified Flat All Records: All PDFs + Citations)
   - Plain-text URL lists (.txt)
 """
 
@@ -118,7 +121,11 @@ def query_partition(item):
                         pdf_rel = d.get("links", {}).get("pdf")
                         if pdf_rel and pdf_rel.endswith(".pdf"):
                             full_url = f"https://ntrs.nasa.gov{pdf_rel}"
-                            extracted.append((cid, full_url, year))
+                            pub_dt = doc.get("published")
+                            dis_dt = doc.get("distributionDate")
+                            cre_dt = doc.get("created")
+                            date_str = (pub_dt or dis_dt or cre_dt or f"{year}-01-01")[:10]
+                            extracted.append((cid, full_url, year, date_str))
                             break
                 return extracted
             elif r.status_code == 429:
@@ -128,6 +135,44 @@ def query_partition(item):
                 print(f"  Error querying {name}: {e}")
             time.sleep(1)
     return []
+
+def ensure_dates_for_recent_years(pdf_dict, target_year=2026):
+    """Ensure all cached records for target_year and beyond have accurate ISO date strings."""
+    missing_cids = [
+        cid for cid, v in pdf_dict.items()
+        if v[1] >= target_year and len(v) < 3
+    ]
+    if not missing_cids:
+        return
+    print(f"Enriching {len(missing_cids):,} cached {target_year}+ records with precise publication dates...")
+    date_map = {}
+    for search_field in ["created", "published"]:
+        body = {
+            "page": {"size": 5000},
+            "index": ["submissions*"],
+            "disseminated": ["DOCUMENT_AND_METADATA"],
+            search_field: {"gte": f"{target_year}-01-01T00:00:00", "lte": f"{target_year}-12-31T23:59:59"}
+        }
+        try:
+            r = requests.post(NTRS_API_SEARCH, json=body, timeout=45)
+            if r.status_code == 200:
+                for doc in r.json().get("results", []):
+                    cid = str(doc.get("id", ""))
+                    pub_dt = doc.get("published")
+                    dis_dt = doc.get("distributionDate")
+                    cre_dt = doc.get("created")
+                    dt = (pub_dt or dis_dt or cre_dt or f"{target_year}-01-01")[:10]
+                    if cid not in date_map or dt > date_map[cid]:
+                        date_map[cid] = dt
+        except Exception as e:
+            print(f"  Warning: Could not fetch {search_field} date map: {e}")
+
+    for cid in missing_cids:
+        val = pdf_dict[cid]
+        yr = val[1]
+        dt = date_map.get(cid, f"{yr}-01-01")
+        pdf_dict[cid] = [val[0], yr, dt]
+    print(f"Enrichment complete: {len(missing_cids):,} records updated with date strings.\n")
 
 def step2_harvest_full_text_pdfs(cache_file_gz=None, cache_file_json=None, force_refresh=False):
     """Load cached PDF links from gzip (or JSON) and incrementally harvest new PDFs for recent years."""
@@ -177,14 +222,27 @@ def step2_harvest_full_text_pdfs(cache_file_gz=None, cache_file_json=None, force
             }, y))
 
         new_count = 0
+        updated_count = 0
         with ThreadPoolExecutor(max_workers=4) as ex:
             for batch in ex.map(query_partition, inc_tasks):
-                for cid, pdf_url, year in batch:
+                for cid, pdf_url, year, date_str in batch:
                     if cid not in pdf_dict:
-                        pdf_dict[cid] = [pdf_url, year]
+                        pdf_dict[cid] = [pdf_url, year, date_str]
                         new_count += 1
+                    else:
+                        entry = pdf_dict[cid]
+                        if len(entry) < 3:
+                            pdf_dict[cid] = [pdf_url, year, date_str]
+                            updated_count += 1
+                        elif date_str and entry[2] < date_str:
+                            pdf_dict[cid] = [pdf_url, year, date_str]
+                            updated_count += 1
 
-        print(f"Incremental check complete: Added {new_count:,} new PDF records.")
+        print(f"Incremental check complete: Added {new_count:,} new PDF records (enriched {updated_count:,} existing dates).")
+
+        # Ensure all 2026+ records have accurate dates for partitioning
+        ensure_dates_for_recent_years(pdf_dict, target_year=2026)
+
         if cache_file_gz:
             try:
                 with gzip.open(cache_file_gz, "wt", encoding="utf-8") as f:
@@ -224,9 +282,9 @@ def step2_harvest_full_text_pdfs(cache_file_gz=None, cache_file_json=None, force
 
     with ThreadPoolExecutor(max_workers=8) as ex:
         for batch in ex.map(query_partition, tasks):
-            for cid, pdf_url, year in batch:
+            for cid, pdf_url, year, date_str in batch:
                 if cid not in pdf_dict:
-                    pdf_dict[cid] = [pdf_url, year]
+                    pdf_dict[cid] = [pdf_url, year, date_str]
 
     dt = time.time() - t0
     print(f"Step 2 Complete: Harvested {len(pdf_dict):,} citations with direct PDF links in {dt:.2f}s.\n")
@@ -331,6 +389,8 @@ def main():
     print("=== Step 3: Categorizing and partitioning URLs ===")
     all_pdf_urls = []
     modern_pdf_urls = []
+    pdf_2026_urls = []
+    future_year_urls = {}  # year -> list of urls
     historical_pdf_urls = []
     citation_urls = []
 
@@ -339,17 +399,33 @@ def main():
 
     for cid in sorted_all_ids:
         if cid in pdf_dict:
-            pdf_url, year = pdf_dict[cid]
+            entry = pdf_dict[cid]
+            pdf_url = entry[0]
+            year = entry[1]
+            date_str = entry[2] if len(entry) > 2 else f"{year}-01-01"
             all_pdf_urls.append(pdf_url)
-            if year >= 2010:
-                modern_pdf_urls.append(pdf_url)
-            else:
+
+            if year < 2010:
                 historical_pdf_urls.append(pdf_url)
+            elif year > 2026:
+                if year not in future_year_urls:
+                    future_year_urls[year] = []
+                future_year_urls[year].append(pdf_url)
+            elif year == 2026:
+                if date_str >= "2026-09-01":
+                    pdf_2026_urls.append(pdf_url)
+                else:
+                    modern_pdf_urls.append(pdf_url)
+            else:  # 2010 <= year < 2026
+                modern_pdf_urls.append(pdf_url)
         else:
             citation_urls.append(f"https://ntrs.nasa.gov/citations/{cid}")
 
     print(f"Total Full-Text PDF URLs: {len(all_pdf_urls):,}")
-    print(f"  Modern Era (2010-2026) PDFs: {len(modern_pdf_urls):,}")
+    print(f"  Modern Era Baseline (2010-Aug 2026) PDFs: {len(modern_pdf_urls):,}")
+    print(f"  Active 2026 Updates (Sep-Dec 2026) PDFs: {len(pdf_2026_urls):,}")
+    for y in sorted(future_year_urls.keys()):
+        print(f"  Annual {y} PDFs: {len(future_year_urls[y]):,}")
     print(f"  Historical (1914-2009) PDFs: {len(historical_pdf_urls):,}")
     print(f"Total Metadata/Abstract URLs: {len(citation_urls):,}")
     print(f"Combined Total URLs: {len(all_pdf_urls) + len(citation_urls):,}")
@@ -384,18 +460,31 @@ def main():
         else:
             break
 
-    # PDF Modern Sitemap (2010-2026)
+    # PDF Modern Sitemap (2010 - August 2026, frozen baseline)
     modern_rel = "sitemaps/pdf/ntrs_pdf_modern.xml"
-    write_urlset_xml(os.path.join(base_dir, modern_rel), modern_pdf_urls, today)
-    print(f"  Wrote {modern_rel} ({len(modern_pdf_urls):,} URLs)")
+    write_urlset_xml(os.path.join(base_dir, modern_rel), modern_pdf_urls, "2026-08-31")
+    print(f"  Wrote {modern_rel} ({len(modern_pdf_urls):,} URLs - Frozen 2010-Aug 2026)")
+
+    # PDF 2026 Sitemap (September 2026 - December 2026 updates)
+    rel_2026 = "sitemaps/pdf/ntrs_pdf_2026.xml"
+    write_urlset_xml(os.path.join(base_dir, rel_2026), pdf_2026_urls, today)
+    print(f"  Wrote {rel_2026} ({len(pdf_2026_urls):,} URLs - Active Sep 2026-Dec 2026)")
+
+    # Future Annual Sitemaps (2027+)
+    future_subs = []
+    for y in sorted(future_year_urls.keys()):
+        rel_y = f"sitemaps/pdf/ntrs_pdf_{y}.xml"
+        write_urlset_xml(os.path.join(base_dir, rel_y), future_year_urls[y], today)
+        future_subs.append(f"{GITHUB_RAW_BASE}/{rel_y}")
+        print(f"  Wrote {rel_y} ({len(future_year_urls[y]):,} URLs - Annual {y})")
 
     # PDF Sitemap Index (Historical chunks 1..11)
     write_sitemapindex_xml(os.path.join(base_dir, "ntrs_pdf_sitemap.xml"), pdf_sub_urls, today)
     print(f"  Wrote ntrs_pdf_sitemap.xml ({len(pdf_sub_urls)} sub-sitemaps)")
 
-    # Unified Flat PDF Sitemap (Historical PDFs for Onyx Web Connector, modern 2010-2026 excluded, 37MB)
+    # Unified Flat PDF Sitemap (Historical PDFs for Onyx Web Connector, modern/2026+ excluded, 37MB)
     write_urlset_xml(os.path.join(base_dir, "ntrs_pdf_all.xml"), historical_pdf_urls, today)
-    print(f"  Wrote ntrs_pdf_all.xml ({len(historical_pdf_urls):,} URLs - Modern 2010-2026 excluded)")
+    print(f"  Wrote ntrs_pdf_all.xml ({len(historical_pdf_urls):,} URLs - Modern/2026+ excluded)")
 
     # Complete master of all PDFs (compressed .xml.gz to keep under GitHub 50MB limit)
     write_urlset_xml(os.path.join(base_dir, "ntrs_pdf_complete.xml.gz"), all_pdf_urls, today, compress=True)
@@ -428,9 +517,13 @@ def main():
     write_urlset_xml(os.path.join(base_dir, "ntrs_citations_all.xml"), citation_urls, today)
     print(f"  Wrote ntrs_citations_all.xml ({len(citation_urls):,} URLs)")
 
-    # 6. Generate Master Sitemap Index (Modern + Historical PDFs + Citations)
+    # 6. Generate Master Sitemap Index (Modern Baseline + 2026 + Future Annuals + Historical PDFs + Citations)
     print("\n=== Step 6: Generating Master Sitemap Index ===")
-    master_subs = [f"{GITHUB_RAW_BASE}/sitemaps/pdf/ntrs_pdf_modern.xml"] + pdf_sub_urls + cit_sub_urls
+    active_pdf_subs = [
+        f"{GITHUB_RAW_BASE}/sitemaps/pdf/ntrs_pdf_modern.xml",
+        f"{GITHUB_RAW_BASE}/sitemaps/pdf/ntrs_pdf_2026.xml"
+    ] + future_subs
+    master_subs = active_pdf_subs + pdf_sub_urls + cit_sub_urls
     write_sitemapindex_xml(os.path.join(base_dir, "ntrs_sitemap.xml"), master_subs, today)
     print(f"  Wrote ntrs_sitemap.xml ({len(master_subs)} total sub-sitemaps)")
 
@@ -443,6 +536,9 @@ def main():
     write_txt_list(os.path.join(base_dir, "ntrs_pdf_urls.txt"), historical_pdf_urls)
     write_txt_list(os.path.join(base_dir, "ntrs_pdf_historical_urls.txt"), historical_pdf_urls)
     write_txt_list(os.path.join(base_dir, "ntrs_pdf_modern_urls.txt"), modern_pdf_urls)
+    write_txt_list(os.path.join(base_dir, "ntrs_pdf_2026_urls.txt"), pdf_2026_urls)
+    for y, u_list in sorted(future_year_urls.items()):
+        write_txt_list(os.path.join(base_dir, f"ntrs_pdf_{y}_urls.txt"), u_list)
     write_txt_list(os.path.join(base_dir, "ntrs_pdf_complete_urls.txt"), all_pdf_urls)
     write_txt_list(os.path.join(base_dir, "ntrs_citations_urls.txt"), citation_urls)
     write_txt_list(os.path.join(base_dir, "ntrs_all_urls.txt"), all_pdf_urls + citation_urls)

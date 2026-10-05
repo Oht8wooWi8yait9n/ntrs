@@ -14,24 +14,37 @@ To accommodate Onyx directly, this repository provides **flat `<urlset>` sitemap
 
 ## Recommended Sitemap URLs for Onyx
 
-### 1. Two-Tier Full-Text PDF Strategy (Recommended - Zero Duplicate Indexing)
-To prevent Onyx from spending time re-indexing modern PDFs when ingesting historical reports, the full-text technical collection is split into two non-overlapping connectors:
+### 1. Three-Tier Full-Text PDF Strategy (Zero Duplicate Indexing & Rapid Updates)
+To prevent Onyx from spending days re-crawling ~80,000 modern PDFs every time new reports are released, the collection is split into discrete, non-overlapping connectors:
 
-* **Tier 1: Modern Era PDFs (2010–2026, 79,391 PDFs)** *(Fastest initial technical RAG)*:
+* **Tier 1: Modern Era Baseline (2010–August 2026, ~83,600 PDFs, Frozen)**:
   ```text
   https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_modern.xml
   ```
+  *(Frozen baseline. Indexed once by Onyx; never modified, eliminating multi-day re-indexing cycles.)*
 
-* **Tier 2: Historical / Pre-2010 PDFs (1914–2009, 218,072 PDFs)** *(Modern 2010–2026 excluded to eliminate duplicate re-indexing)*:
+* **Tier 2: Active 2026 Updates (September 2026–December 2026, ~225+ PDFs)**:
+  ```text
+  https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_2026.xml
+  ```
+  *(Active weekly updates for the remainder of 2026. Indexes in Onyx in under 2 minutes.)*
+
+* **Future Annual Rollover (2027+)**:
+  ```text
+  https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/sitemaps/pdf/ntrs_pdf_2027.xml
+  ```
+  *(When 2027 begins, `ntrs_pdf_2026.xml` freezes automatically and new updates flow into `ntrs_pdf_2027.xml`.)*
+
+* **Tier 3: Historical / Pre-2010 PDFs (1914–2009, 218,072 PDFs)**:
   ```text
   https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/ntrs_pdf_all.xml
   ```
-  *(Also accessible via `https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/ntrs_pdf_historical.xml`)*
+  *(Modern and 2026+ publications excluded to eliminate duplicate re-indexing.)*
 
 > [!NOTE]
-> **Zero Duplicate Ingestion**: Tier 1 (79,391) and Tier 2 (218,072) have **0% overlap**. Adding both connectors indexes 100% of all 297,463 NASA technical PDFs without re-indexing a single document.
+> **Zero Duplicate Ingestion**: Tier 1, Tier 2, and Tier 3 have **0% overlap**. Adding these connectors indexes 100% of all NASA technical PDFs without re-indexing a single document.
 
-* **Optional: Complete Master Archive (1914–2026, 297,942 PDFs in a compressed sitemap)**:
+* **Optional: Complete Master Archive (1914–2026, ~298,000 PDFs in a compressed sitemap)**:
   ```text
   https://raw.githubusercontent.com/Oht8wooWi8yait9n/ntrs/main/ntrs_pdf_complete.xml.gz
   ```
