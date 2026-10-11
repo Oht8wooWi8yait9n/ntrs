@@ -11816,6 +11816,11 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260000196/downloads/DARES%20HWO%20Living%20Worlds%20White%20Paper_affil_v2.pdf</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260000195/downloads/AMS_2026_Dutcher_presentation_2.pdf</loc>
     <lastmod>2026-08-31</lastmod>
     <changefreq>monthly</changefreq>
@@ -13177,6 +13182,11 @@
   </url>
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20250011231/downloads/SciTech2026_Huygens_MultiBody_Robb_v2.pdf</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20250011230/downloads/Methods%20to%20Increase%20Tritium.pdf</loc>
     <lastmod>2026-08-31</lastmod>
     <changefreq>monthly</changefreq>
   </url>
@@ -24052,6 +24062,11 @@
   </url>
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20250004630/downloads/UBristol-workshop_lowres.pdf</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20250004627/downloads/AERACEPT_modeling_paper_accepted.pdf</loc>
     <lastmod>2026-08-31</lastmod>
     <changefreq>monthly</changefreq>
   </url>

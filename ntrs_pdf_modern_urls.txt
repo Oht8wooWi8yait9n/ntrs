@@ -2361,6 +2361,7 @@ https://ntrs.nasa.gov/api/citations/20260000204/downloads/450_2-DTN-DIG-L4%20Pre
 https://ntrs.nasa.gov/api/citations/20260000203/downloads/AIAA%20SciTech%202026%20-%20Presentation%20-%20UAS%203D%20Sim%20Env.pdf
 https://ntrs.nasa.gov/api/citations/20260000202/downloads/450_2-DTN-DIG-L3_Preliminary_Release_3_20251212_v2.pdf
 https://ntrs.nasa.gov/api/citations/20260000201/downloads/R%20Simons_E-Band%20PA%20for%20Multi-Gbps%20Satcom%20Links.pdf
+https://ntrs.nasa.gov/api/citations/20260000196/downloads/DARES%20HWO%20Living%20Worlds%20White%20Paper_affil_v2.pdf
 https://ntrs.nasa.gov/api/citations/20260000195/downloads/AMS_2026_Dutcher_presentation_2.pdf
 https://ntrs.nasa.gov/api/citations/20260000194/downloads/De%20la%20Cruz%20-%20IMAC2026%20rev.pdf
 https://ntrs.nasa.gov/api/citations/20260000192/downloads/Rodriguez_PR_SimStirling_SciTech26_20260000192_2.pdf
@@ -2634,6 +2635,7 @@ https://ntrs.nasa.gov/api/citations/20250011237/downloads/AGU_Foundation%20Model
 https://ntrs.nasa.gov/api/citations/20250011233/downloads/AIS_BaTh_V1.pdf
 https://ntrs.nasa.gov/api/citations/20250011232/downloads/HRoe_Azab_final.pdf
 https://ntrs.nasa.gov/api/citations/20250011231/downloads/SciTech2026_Huygens_MultiBody_Robb_v2.pdf
+https://ntrs.nasa.gov/api/citations/20250011230/downloads/Methods%20to%20Increase%20Tritium.pdf
 https://ntrs.nasa.gov/api/citations/20250011223/downloads/Aerothermal%20and%20TPS%20Analysis%20ARRIVAL%20vfinal.pdf
 https://ntrs.nasa.gov/api/citations/20250011216/downloads/Stubbs_Mehta_Scaling_SciTech_2026.pdf
 https://ntrs.nasa.gov/api/citations/20250011214/downloads/High%20Temperature%20GRX-810%20paper%20-%20120925%20strives.pdf
@@ -4809,6 +4811,7 @@ https://ntrs.nasa.gov/api/citations/20250004642/downloads/paper_lunarFOV.pdf
 https://ntrs.nasa.gov/api/citations/20250004637/downloads/SCW-2025%20MHTB%20Spray%20Bar%20Cooling%20-%20CP.pdf
 https://ntrs.nasa.gov/api/citations/20250004636/downloads/20250004636.pdf
 https://ntrs.nasa.gov/api/citations/20250004630/downloads/UBristol-workshop_lowres.pdf
+https://ntrs.nasa.gov/api/citations/20250004627/downloads/AERACEPT_modeling_paper_accepted.pdf
 https://ntrs.nasa.gov/api/citations/20250004626/downloads/MRE_paper_revision_clean.pdf
 https://ntrs.nasa.gov/api/citations/20250004622/downloads/nasgro_post_autofrettage_V3.pdf
 https://ntrs.nasa.gov/api/citations/20250004621/downloads/Timms_MetSoc2025-EvidenceImpactsBennu.pdf
