@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009930/downloads/earth-06-00130.pdf</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009446/downloads/NASA%20Future%20of%20Community_STRIVES%20Submit%20101226.pdf</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260008838/downloads/CIvanovichWCDPhysicalReprintSupp.pdf</loc>
     <lastmod>2026-08-31</lastmod>
     <changefreq>monthly</changefreq>
