@@ -37,7 +37,14 @@ jobs:
           git config http.postBuffer 524288000
           git add -A *.xml *.xml.gz sitemaps/ ntrs_*.txt ntrs_cache.json.gz
           if git diff --staged --quiet; then
-            echo "No changes detected in sitemaps."
+            DAYS_SINCE_COMMIT=$(( ($(date +%s) - $(git log -1 --format=%ct)) / 86400 ))
+            if [ "$DAYS_SINCE_COMMIT" -ge 45 ]; then
+              echo "No sitemap changes, but last commit was ${DAYS_SINCE_COMMIT} days ago (>= 45d). Pushing empty keepalive commit."
+              git commit --allow-empty -m "chore(ci): 45-day keepalive to prevent GitHub Actions 60-day schedule auto-disable [skip ci]"
+              git push
+            else
+              echo "No changes detected in sitemaps. (last commit ${DAYS_SINCE_COMMIT}d ago)."
+            fi
           else
             git commit -m "Automated update of NTRS sitemaps [skip ci]"
             for attempt in $(seq 1 5); do
