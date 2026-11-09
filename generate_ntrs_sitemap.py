@@ -305,6 +305,7 @@ def write_urlset_xml(filepath, urls, lastmod, compress=False):
     actual_path = filepath if (filepath.endswith(".gz") or not compress) else filepath + ".gz"
 
     # Check if existing file has identical URLs to avoid bumping lastmod and polluting git diffs
+    existing_lastmods = {}
     if os.path.exists(actual_path):
         try:
             if actual_path.endswith(".gz"):
@@ -316,6 +317,7 @@ def write_urlset_xml(filepath, urls, lastmod, compress=False):
             existing_locs = re.findall(r'<loc>([^<]+)</loc>', content)
             if existing_locs == urls:
                 return actual_path
+            existing_lastmods = dict(re.findall(r'<loc>([^<]+)</loc>\s*<lastmod>([^<]+)</lastmod>', content))
         except Exception:
             pass
 
@@ -325,9 +327,10 @@ def write_urlset_xml(filepath, urls, lastmod, compress=False):
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         f.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
         for u in urls:
+            u_lastmod = existing_lastmods.get(u, lastmod)
             f.write("  <url>\n")
             f.write(f"    <loc>{u}</loc>\n")
-            f.write(f"    <lastmod>{lastmod}</lastmod>\n")
+            f.write(f"    <lastmod>{u_lastmod}</lastmod>\n")
             f.write("    <changefreq>monthly</changefreq>\n")
             f.write("  </url>\n")
         f.write("</urlset>\n")
