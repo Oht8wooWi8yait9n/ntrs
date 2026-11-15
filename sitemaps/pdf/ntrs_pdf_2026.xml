@@ -1,13 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010652/downloads/UF%20lecture-revised-Costa.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010649/downloads/Tuncar_Haw_Extended_Abstract_Rev2.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010638/downloads/Shea_ODU%20Seminar%20_2026-11-10.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010581/downloads/2026-11_samba_pysips_priors.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010539/downloads/Itterly_HU_seminar_geo_convection_climo_finalv2.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010534/downloads/NASA-TM-20260010534.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010532/downloads/Abbott_Nuclear_Workshop_v2.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260010526/downloads/Charoenboonvivat_FSP_UCBerkeleyWS_20260010526_2.pdf</loc>
     <lastmod>2026-11-08</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010524/downloads/APS26_FLASH-2.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010518/downloads/NASA-TM-20260010518.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010509/downloads/Lasercom%20on%20Artemis%20II%20-%20v1.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010505/downloads/CDDIS_SIRGAS_Symposium_Nov_2026_updated.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260010487/downloads/IEEE_RISC_2026_paper_37.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010472/downloads/Spectral%20Decomposition%20ICFD%202026.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010467/downloads/IWLR_ALLR_261102.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -23,6 +88,26 @@
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260010451/downloads/NEBP%20Frontiers%20article.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010430/downloads/FIRMS%202G_V3.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010395/downloads/SciTech2027_MarsAerocapture_Final.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010381/downloads/Ops%20Lasercom%20for%20Human%20Space%20Explor.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010374/downloads/CLARREOStudy%20Space%20Sim.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -56,8 +141,33 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010340/downloads/vigil.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010328/downloads/ARuaneAgricWaterMgmtUncertaintiesReprint.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260010320/downloads/D2_1410_Kroodsma_CoSMIRH_CoSSIR.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010298/downloads/ICFD2026_Presentation_261027.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010280/downloads/Xu_SPIE_2026.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010276/downloads/Version_2_NPPsymposiumMaraLeite2026.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -96,6 +206,11 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010216/downloads/FCDC_2025-26_LTM_report_Final.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260010209/downloads/Optical%20Communications%20for%20Artemis%20II%20and%20Beyond%202.pdf</loc>
     <lastmod>2026-11-08</lastmod>
     <changefreq>monthly</changefreq>
@@ -103,6 +218,11 @@
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260010206/downloads/kato_ham_etal_sarb_presentation_v1.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010204/downloads/FloresGovea_APSDPP_ARCTRON_Poster.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -161,6 +281,11 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010106/downloads/2025wr041863-sup-si-s01.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260010103/downloads/Table_S1.pdf</loc>
     <lastmod>2026-11-08</lastmod>
     <changefreq>monthly</changefreq>
@@ -176,6 +301,11 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010088/downloads/ACO%20ELECTRA%20QD%20Coupling-Public%20Release.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260010085/downloads/ARuaneEarthsFutureExplainingReprint.pdf</loc>
     <lastmod>2026-11-08</lastmod>
     <changefreq>monthly</changefreq>
@@ -188,6 +318,11 @@
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260010080/downloads/HVIS2026%20REV%202.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010077/downloads/Interface%20Agnostic%20Robotic%20Grasping_v3.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -216,6 +351,11 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010028/downloads/Development%20of%20scatter%20light%20measurement.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260010023/downloads/Fischbach_paper_JANNAF_Jan2026.pdf</loc>
     <lastmod>2026-11-08</lastmod>
     <changefreq>monthly</changefreq>
@@ -233,6 +373,11 @@
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260010017/downloads/TB_26-10.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010015/downloads/AM%20ORPB%20Test%20abstract%20-%20Hulka%2010-19-26.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -258,6 +403,11 @@
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260009964/downloads/KSC_SWMU_056_2026_Hot%20Spot%203_%20ISCR%20IM%20CCR.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009963/downloads/MAX9619_TestReport_SEE_2026_3.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -296,6 +446,11 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009908/downloads/PlanetaryPhysicsChallengeTITemplateV3.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260009895/downloads/SWS_NASA_Systems%20Summit_Final.pdf</loc>
     <lastmod>2026-11-08</lastmod>
     <changefreq>monthly</changefreq>
@@ -311,8 +466,43 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009886/downloads/slides_aosc_umd.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009884/downloads/VIIRS_paper_vbuchard_abstract250.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009882/downloads/HelioPhysicsChallengeTITemplateV3.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009881/downloads/DFPSC%20Presentation_Final.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009879/downloads/Data%20Centers%20of%20the%20ILRS%20-%20Edited%20without%20video.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009877/downloads/Secondary%20inorganic%20aerosol2.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260009874/downloads/Huffman26_UnivAriz_IMERG08_slides.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009868/downloads/Sources%20transport%20and%20visibility2.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -321,13 +511,38 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009862/downloads/Quantifying%20the%20impacts%20of%20PM2.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009859/downloads/Interannual%20variability%20of%20secondary%20organic2.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009858/downloads/High-spectral-sesolution%20retrieval.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260009857/downloads/Embedded%20information%20of%20aerosol2.pdf</loc>
     <lastmod>2026-11-08</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009856/downloads/iSAIRAS_Interface_Agnostic_Grasping_Final.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260009852/downloads/10-20%20Fabtech%20Dust%20and%20Tubes%20Presentation%202026.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009845/downloads/AstrophysicsTITemplateV4.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -396,6 +611,11 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009799/downloads/Ricardo%20Lent%20IEEE%20LatinCom%20Paper.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260009787/downloads/CBM2_PP_ODA_rev4.pdf</loc>
     <lastmod>2026-11-08</lastmod>
     <changefreq>monthly</changefreq>
@@ -418,6 +638,11 @@
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260009763/downloads/Demuth%20Moose%20Paper.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009760/downloads/NASA_TM_20260009760.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -546,6 +771,11 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009625/downloads/Abstract_iwlr26.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260009603/downloads/Fundamentals_of_Microwave_Radiometry.pdf</loc>
     <lastmod>2026-11-08</lastmod>
     <changefreq>monthly</changefreq>
@@ -598,6 +828,11 @@
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260009564/downloads/UPenn_Roman_Final%20Slides.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009563/downloads/Abstract_ilrs2026_kevans.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -791,6 +1026,11 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009429/downloads/Thermal%20Radiation%20Presentation.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260009427/downloads/riverbed_v10.pdf</loc>
     <lastmod>2026-11-08</lastmod>
     <changefreq>monthly</changefreq>
@@ -813,6 +1053,11 @@
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260009420/downloads/2026_ImpACT_Pribe_v2.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009419/downloads/BucknerPhotochemicalSTI.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -883,6 +1128,11 @@
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260009369/downloads/GMASSA%20UTK%202026.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009367/downloads/2026%20DASH%20-%20Agentic%20AI%20and%20LLMv2.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -1756,6 +2006,11 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260008715/downloads/NASA-TM-20260008715_Final.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260008699/downloads/SOMbench_strives.pdf</loc>
     <lastmod>2026-11-08</lastmod>
     <changefreq>monthly</changefreq>
@@ -1838,6 +2093,11 @@
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260008642/downloads/OCI-SCI-RPT-0478pub.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260008641/downloads/IMECE%20final%209-17-26.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -2298,6 +2558,11 @@
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260008320/downloads/20260825_astra_xess_poster_draft_v3.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260008318/downloads/BP_NASA_SC26_v2.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -2916,8 +3181,18 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260006940/downloads/ICFD_2026_Draft_20260729.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260006849/downloads/AWS_2026_Abstract_AR2_Ferguson.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260006821/downloads/ICFD2026_version_2.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -3098,6 +3373,11 @@
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260005817/downloads/2026_AAS_McCBroSchAguBur_wTM.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260005804/downloads/HVIS2026%20XXX%20DAC2%20BLE%20Update%20DRAFT%20REV.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
@@ -3353,6 +3633,11 @@
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260001430/downloads/abstract_260213.pdf</loc>
     <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260001197/downloads/2026_LLM_PVS.pdf</loc>
+    <lastmod>2026-11-15</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>

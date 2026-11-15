@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260010930/downloads/sciadvadt7480-3.pdf</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260009930/downloads/earth-06-00130.pdf</loc>
     <lastmod>2026-08-31</lastmod>
     <changefreq>monthly</changefreq>
@@ -12,6 +17,11 @@
   </url>
   <url>
     <loc>https://ntrs.nasa.gov/api/citations/20260009866/downloads/Seasonal%20variations2.pdf</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://ntrs.nasa.gov/api/citations/20260009865/downloads/Reconciling%20volume%20and%20mass2.pdf</loc>
     <lastmod>2026-08-31</lastmod>
     <changefreq>monthly</changefreq>
   </url>
